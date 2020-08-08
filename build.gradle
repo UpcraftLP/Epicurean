@@ -15,8 +15,6 @@ minecraft {
 }
 
 repositories {
-	jcenter()
-	maven { url "http://server.bbkr.space:8081/artifactory/libs-release" } // Cotton maven - home of Cotton projects
 	maven { url "https://maven.onyxstudios.dev" } // Onyx Studios maven - home of Cardinal Components
 }
 
