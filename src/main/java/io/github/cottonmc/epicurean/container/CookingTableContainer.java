@@ -3,24 +3,27 @@ package io.github.cottonmc.epicurean.container;
 import io.github.cottonmc.epicurean.block.EpicureanBlocks;
 import io.github.cottonmc.epicurean.recipe.EpicureanRecipes;
 import io.github.cottonmc.epicurean.recipe.MealRecipe;
-import net.minecraft.client.network.packet.ContainerSlotUpdateS2CPacket;
 import net.minecraft.container.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeFinder;
+import net.minecraft.screen.AbstractRecipeScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
 
 import java.util.Optional;
 
-public class CookingTableContainer extends CraftingContainer<CookingInventory> {
+public class CookingTableContainer extends AbstractRecipeScreenHandler<CookingInventory> {
 	private final CookingInventory cookingInv;
 	private final CraftingResultInventory resultInv;
-	private final BlockContext context;
+	private final ScreenHandlerContext context;
 	private final PlayerEntity player;
 
 	public static final int RESULT_SLOT = 0;
@@ -29,10 +32,10 @@ public class CookingTableContainer extends CraftingContainer<CookingInventory> {
 	public static final int SLOT_COUNT = 49;
 
 	public CookingTableContainer(int syncId, PlayerInventory playerInv) {
-		this(syncId, playerInv, BlockContext.create(playerInv.player.world, playerInv.player.getBlockPos()));
+		this(syncId, playerInv, ScreenHandlerContext.create(playerInv.player.world, playerInv.player.getBlockPos()));
 	}
 
-	public CookingTableContainer(int syncId, PlayerInventory playerInv, BlockContext ctx) {
+	public CookingTableContainer(int syncId, PlayerInventory playerInv, ScreenHandlerContext ctx) {
 		super(null, syncId);
 		this.cookingInv = new CookingInventory(this, playerInv.player);
 		this.resultInv = new CraftingResultInventory();
@@ -134,8 +137,8 @@ public class CookingTableContainer extends CraftingContainer<CookingInventory> {
 				}
 			}
 
-			resultInv.setInvStack(0, stack);
-			serverPlayer.networkHandler.sendPacket(new ContainerSlotUpdateS2CPacket(syncId, 0, stack));
+			resultInv.setStack(0, stack);
+			serverPlayer.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(syncId, 0, stack));
 		}
 	}
 

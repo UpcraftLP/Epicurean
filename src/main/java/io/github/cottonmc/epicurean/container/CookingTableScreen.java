@@ -2,12 +2,12 @@ package io.github.cottonmc.epicurean.container;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import io.github.cottonmc.epicurean.Epicurean;
-import net.minecraft.client.gui.screen.ingame.ContainerScreen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
-public class CookingTableScreen extends ContainerScreen<CookingTableContainer> /*implements RecipeBookProvider*/ {
+public class CookingTableScreen extends HandledScreen<CookingTableContainer> /*implements RecipeBookProvider*/ {
 	private static final Identifier TEXTURE = new Identifier(Epicurean.MOD_ID, "textures/gui/cooking_table.png");
 	private static final Identifier RECIPE_BUTTON_TEX = new Identifier("textures/gui/recipe_button.png");
 	private final CookingRecipeBookWidget recipeBookGui = new CookingRecipeBookWidget();
@@ -24,7 +24,7 @@ public class CookingTableScreen extends ContainerScreen<CookingTableContainer> /
 		//TODO: uncomment when there's a better way to make new recipe book groups
 //		this.recipeBookGui.initialize(this.screenWidth, this.screenHeight, this.client, this.isNarrow, this.container);
 //		this.x = this.recipeBookGui.findLeftEdge(this.isNarrow, this.screenWidth, this.width);
-		this.x = (this.width - this.containerWidth) / 2;
+		this.x = (this.width - this.backgroundWidth) / 2;
 //		this.listeners.add(this.recipeBookGui);
 //		this.focusOn(this.recipeBookGui);
 //		this.addButton(new RecipeBookButtonWidget(this.x + 144, this.y + 9, 20, 18, 0, 0, 19, RECIPE_BUTTON_TEX, (buttonWidget_1) -> {
@@ -45,8 +45,8 @@ public class CookingTableScreen extends ContainerScreen<CookingTableContainer> /
 		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 		this.minecraft.getTextureManager().bindTexture(TEXTURE);
 		int guiX = this.x;
-		int guiY = (this.height - this.containerHeight) / 2;
-		this.blit(guiX, guiY, 0, 0, this.containerWidth, this.containerHeight);
+		int guiY = (this.height - this.backgroundHeight) / 2;
+		this.blit(guiX, guiY, 0, 0, this.backgroundWidth, this.backgroundHeight);
 	}
 
 	@Override

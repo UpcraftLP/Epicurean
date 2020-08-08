@@ -139,7 +139,7 @@ public class MixinHopperHarvesting {
 	private static LootContext.Builder getLootContext(World world, BlockPos pos) {
 		return new LootContext
 				.Builder(world.getServer().getWorld(world.dimension.getType()))
-				.put(LootContextParameters.POSITION, pos).put(LootContextParameters.TOOL, ItemStack.EMPTY);
+				.parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY);
 	}
 
 	private static List<ItemStack> attemptCollect(Inventory inv, List<ItemStack> results) {

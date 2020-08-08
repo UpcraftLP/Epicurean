@@ -1,31 +1,23 @@
 plugins {
-	id "java"
-	id "eclipse"
-	id "idea"
-	id "fabric-loom" version "0.2.6-SNAPSHOT"
+	id "fabric-loom" version "0.4-SNAPSHOT"
 	id "maven-publish"
 	id "com.jfrog.artifactory" version "4.9.0"
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
-if(rootProject.file("private.gradle").exists()) { //Publishing details
-	apply from: "private.gradle"
-}
-
-archivesBaseName = "${project.archives_base_name}"
-group = "${project.maven_group}"
+archivesBaseName = project.archives_base_name
+group = project.maven_group
 version = "${project.mod_version}+${project.minecraft_version}"
 
 minecraft {
+
 }
 
 repositories {
-	mavenCentral()
-	maven { url "http://maven.fabricmc.net/" } // Fabric maven - home of Fabric API and ModMenu
+	jcenter()
 	maven { url "http://server.bbkr.space:8081/artifactory/libs-release" } // Cotton maven - home of Cotton projects
-	maven { url "https://maven.abusedmaster.xyz" } // NerdHub maven - home of Cardinal Components
+	maven { url "https://maven.onyxstudios.dev" } // Onyx Studios maven - home of Cardinal Components
 }
 
 dependencies {
@@ -36,16 +28,6 @@ dependencies {
 	compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
 	modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
-	modImplementation ("io.github.cottonmc.cotton:cotton:${project.cotton_version}") {
-		exclude(group: "net.fabricmc.fabric-api", module: "fabric-api")
-		exclude(group: "io.github.prospector.modmenu", module: "ModMenu")
-	}
-//	modCompile "cloth-config:ClothConfig:0.2.1.14"
-//	include "cloth-config:ClothConfig:0.2.1.14"
-//	modCompile "appleskin:appleskin-mc1.14:fabric:1.0.6"
-//	modCompile "io.github.cottonmc:SkillCheck:1.1.0+1.14.2"
-
-	modImplementation "io.github.cottonmc:Jankson-Fabric:${project.jankson_version}"
 }
 
 processResources {
@@ -76,61 +58,4 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 jar {
 	from "LICENSE"
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		maven(MavenPublication) {
-			// add all the jars that should be included when publishing to maven
-			//artifact(jar) {
-			//	builtBy remapJar
-			//}
-			artifact ("${project.buildDir.absolutePath}/libs/${archivesBaseName}-${project.version}.jar") { //release jar - file location not provided anywhere in loom
-				classifier null
-				builtBy remapJar
-			}
-
-			artifact ("${project.buildDir.absolutePath}/libs/${archivesBaseName}-${project.version}-dev.jar") { //release jar - file location not provided anywhere in loom
-				classifier "dev"
-				builtBy remapJar
-			}
-
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
-		}
-	}
-
-	// select the repositories you want to publish to
-	repositories {
-		// uncomment to publish to the local maven
-		// mavenLocal()
-	}
-}
-
-artifactory {
-	if (project.hasProperty("artifactoryUsername")) {
-		contextUrl = "http://server.bbkr.space:8081/artifactory/"
-		publish {
-			repository {
-				if (version.contains("SNAPSHOT")) {
-					repoKey = "libs-snapshot"
-				} else {
-					repoKey = "libs-release"
-				}
-
-				username = artifactoryUsername
-				password = artifactoryPassword
-			}
-			defaults {
-				publications("maven")
-
-				publishArtifacts = true
-				publishPom = true
-			}
-		}
-	} else {
-		println "Cannot configure artifactory; please define ext.artifactoryUsername and ext.artifactoryPassword before running artifactoryPublish"
-	}
 }

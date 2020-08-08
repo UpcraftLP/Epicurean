@@ -50,7 +50,7 @@ public class HarvestableCropBlock extends CropBlock {
 			if (world.getBlockState(pos.offset(Direction.DOWN)).getBlock() == Blocks.FARMLAND) {
 				LootContext.Builder ctx = new LootContext
 						.Builder(world.getServer().getWorld(world.dimension.getType()))
-						.put(LootContextParameters.POSITION, pos).put(LootContextParameters.TOOL, ItemStack.EMPTY);
+						.parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY);
 				List<ItemStack> results = state.getDroppedStacks(ctx);
 				for (ItemStack stack : results) {
 					ItemEntity entity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);

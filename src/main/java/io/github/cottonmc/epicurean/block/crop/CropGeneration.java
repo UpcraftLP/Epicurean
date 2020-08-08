@@ -12,7 +12,7 @@ import net.minecraft.world.gen.decorator.Decorator;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.RandomPatchFeatureConfig;
 import net.minecraft.world.gen.placer.SimpleBlockPlacer;
-import net.minecraft.world.gen.stateprovider.SimpleStateProvider;
+import net.minecraft.world.gen.stateprovider.SimpleBlockStateProvider;
 
 public class CropGeneration {
 	public static void registerCrops() {
@@ -23,7 +23,7 @@ public class CropGeneration {
 								createPlantFeature(
 										EpicureanCrops.PEPPER_PLANT.getDefaultState().with(PickableCropBlock.AGE, 3),
 										Blocks.GRASS_BLOCK, Blocks.SAND))
-								.createDecoratedFeature(
+								.decorate(
 										Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
 												new ChanceDecoratorConfig(1)
 										)
@@ -36,7 +36,7 @@ public class CropGeneration {
 								createPlantFeature(
 										EpicureanCrops.ONION_PLANT.getDefaultState().with(HarvestableCropBlock.AGE, 7),
 										Blocks.GRASS_BLOCK))
-								.createDecoratedFeature(
+								.decorate(
 										Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
 												new ChanceDecoratorConfig(1)
 										)
@@ -47,7 +47,7 @@ public class CropGeneration {
 								createPlantFeature(
 										EpicureanCrops.TOMATO_PLANT.getDefaultState().with(HarvestableCropBlock.AGE, 7),
 										Blocks.GRASS_BLOCK))
-								.createDecoratedFeature(
+								.decorate(
 										Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
 												new ChanceDecoratorConfig(1)
 										)
@@ -59,7 +59,7 @@ public class CropGeneration {
 
 	private static RandomPatchFeatureConfig createPlantFeature(BlockState state, Block...plantOn) {
 		return new RandomPatchFeatureConfig.Builder(
-				new SimpleStateProvider(state),
+				new SimpleBlockStateProvider(state),
 				new SimpleBlockPlacer()
 		)
 				.tries(64)
