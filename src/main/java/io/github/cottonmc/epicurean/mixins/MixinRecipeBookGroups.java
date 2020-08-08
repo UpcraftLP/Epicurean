@@ -13,10 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientRecipeBook.class)
 public class MixinRecipeBookGroups {
 
-	@Inject(method = "getGroupsForContainer", at = @At("HEAD"), cancellable = true)
-	private static void getCookingTableGroups(AbstractRecipeScreenHandler<?> container, CallbackInfoReturnable cir) {
-		if (container instanceof CookingTableContainer) {
-			cir.setReturnValue(Lists.newArrayList(RecipeBookGroup.CRAFTING_SEARCH,RecipeBookGroup.CRAFTING_MISC));
-		}
-	}
+    @Inject(method = "getGroupsForContainer", at = @At("HEAD"), cancellable = true)
+    private static void getCookingTableGroups(AbstractRecipeScreenHandler<?> container, CallbackInfoReturnable cir) {
+        if (container instanceof CookingTableContainer) {
+            cir.setReturnValue(Lists.newArrayList(RecipeBookGroup.CRAFTING_SEARCH, RecipeBookGroup.CRAFTING_MISC));
+        }
+    }
 }

@@ -17,22 +17,22 @@ import net.minecraft.world.World;
 
 public class CookingTableBlock extends Block {
 
-	public CookingTableBlock() {
-		super(FabricBlockSettings.of(Material.WOOD)
-				.breakByTool(FabricToolTags.PICKAXES)
-				.sounds(BlockSoundGroup.STONE)
-				.strength(2.0f, 6.0f)
-				.build());
-	}
+    public CookingTableBlock() {
+        super(FabricBlockSettings.of(Material.WOOD)
+                .breakByTool(FabricToolTags.PICKAXES)
+                .sounds(BlockSoundGroup.STONE)
+                .strength(2.0f, 6.0f)
+                .build());
+    }
 
-	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		if (world.isClient) return ActionResult.SUCCESS;
-		ContainerProviderRegistry.INSTANCE.openContainer(EpicureanBlocks.COOKING_CONTAINER, player, buf -> {
-			buf.writeBlockPos(pos);
-		});
+    @Override
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (world.isClient) return ActionResult.SUCCESS;
+        ContainerProviderRegistry.INSTANCE.openContainer(EpicureanBlocks.COOKING_CONTAINER, player, buf -> {
+            buf.writeBlockPos(pos);
+        });
 //		player.increaseStat(new Identifier(EpicureanGastronomy.MOD_ID, "open_cooking_table"));
-		return ActionResult.SUCCESS;
-	}
+        return ActionResult.SUCCESS;
+    }
 
 }

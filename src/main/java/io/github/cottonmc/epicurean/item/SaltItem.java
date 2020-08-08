@@ -11,13 +11,13 @@ import net.minecraft.world.World;
 import java.util.List;
 
 public class SaltItem extends Item {
-	public SaltItem(Settings settings) {
-		super(settings);
-	}
+    public SaltItem(Settings settings) {
+        super(settings);
+    }
 
-	@Override
-	public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext ctx) {
-		super.appendTooltip(stack, world, tooltip, ctx);
-		tooltip.add(new TranslatableText("tooltip.epicurean.dressing", "§f§osalt").formatted(Formatting.GRAY, Formatting.ITALIC));
-	}
+    @Override
+    public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext ctx) {
+        super.appendTooltip(stack, world, tooltip, ctx);
+        tooltip.add(new TranslatableText("tooltip.epicurean.dressing", "§f§osalt").formatted(Formatting.GRAY, Formatting.ITALIC));
+    }
 }

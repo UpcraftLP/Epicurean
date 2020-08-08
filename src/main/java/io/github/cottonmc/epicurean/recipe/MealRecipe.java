@@ -1,12 +1,12 @@
 package io.github.cottonmc.epicurean.recipe;
 
 import io.github.cottonmc.epicurean.Epicurean;
+import io.github.cottonmc.epicurean.api.MealBooster;
+import io.github.cottonmc.epicurean.api.Seasoning;
 import io.github.cottonmc.epicurean.container.CookingInventory;
 import io.github.cottonmc.epicurean.item.EpicureanItems;
-import io.github.cottonmc.epicurean.api.Seasoning;
 import io.github.cottonmc.epicurean.meal.FlavorGroup;
 import io.github.cottonmc.epicurean.meal.IngredientProfiles;
-import io.github.cottonmc.epicurean.api.MealBooster;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.inventory.CraftingInventory;
@@ -14,11 +14,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.PotionUtil;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeFinder;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.CraftingRecipe;
+import net.minecraft.recipe.*;
 import net.minecraft.tag.ItemTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
@@ -29,250 +25,250 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MealRecipe implements CraftingRecipe {
-	private final Identifier id;
-	private final String group;
-	private final ItemStack output;
-	private final DefaultedList<Ingredient> base;
-	private final DefaultedList<Ingredient> seasonings;
+    private final Identifier id;
+    private final String group;
+    private final ItemStack output;
+    private final DefaultedList<Ingredient> base;
+    private final DefaultedList<Ingredient> seasonings;
 
-	public MealRecipe(Identifier id, String group, ItemStack output, DefaultedList<Ingredient> base, DefaultedList<Ingredient> seasonings) {
-		this.id = id;
-		this.group = group;
-		this.output = output;
-		this.base = base;
-		this.seasonings = seasonings;
-	}
+    public MealRecipe(Identifier id, String group, ItemStack output, DefaultedList<Ingredient> base, DefaultedList<Ingredient> seasonings) {
+        this.id = id;
+        this.group = group;
+        this.output = output;
+        this.base = base;
+        this.seasonings = seasonings;
+    }
 
-	@Override
-	public RecipeType<?> getType() {
-		return EpicureanRecipes.MEAL;
-	}
+    @Override
+    public RecipeType<?> getType() {
+        return EpicureanRecipes.MEAL;
+    }
 
-	@Override
-	public boolean matches(CraftingInventory inv, World world) {
-		if (!(inv instanceof CookingInventory)) return false;
-		RecipeFinder finder = new RecipeFinder();
-		int foundBases = 0;
+    @Override
+    public boolean matches(CraftingInventory inv, World world) {
+        if (!(inv instanceof CookingInventory)) return false;
+        RecipeFinder finder = new RecipeFinder();
+        int foundBases = 0;
 
-		for (int i = 0; i < CookingInventory.SECTION_SIZE; i++) {
-			ItemStack stack = inv.getStack(i);
-			if (!stack.isEmpty()) {
-				++foundBases;
-				finder.addItem(stack);
-			}
-		}
+        for (int i = 0; i < CookingInventory.SECTION_SIZE; i++) {
+            ItemStack stack = inv.getStack(i);
+            if (!stack.isEmpty()) {
+                ++foundBases;
+                finder.addItem(stack);
+            }
+        }
 
-		//make sure the seasonings fit on the meal
-		for (int i = CookingInventory.SECTION_SIZE; i < inv.size(); i++) {
-			ItemStack stack = inv.getStack(i);
-			boolean isSalt = Epicurean.config.useSaltTag?
-					ItemTags.getTagGroup().get(new Identifier("c", "salt")).contains(stack.getItem()) : stack.getItem() == EpicureanItems.SALT;
-			if (stack.isEmpty() || isSalt) continue;
-			boolean seasoningFound = false;
-			for (Ingredient ing : seasonings) {
-				if (ing.test(stack)) seasoningFound = true;
-			}
-			if (!seasoningFound) return false;
-		}
+        //make sure the seasonings fit on the meal
+        for (int i = CookingInventory.SECTION_SIZE; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
+            boolean isSalt = Epicurean.config.useSaltTag ?
+                    ItemTags.getTagGroup().get(new Identifier("c", "salt")).contains(stack.getItem()) : stack.getItem() == EpicureanItems.SALT;
+            if (stack.isEmpty() || isSalt) continue;
+            boolean seasoningFound = false;
+            for (Ingredient ing : seasonings) {
+                if (ing.test(stack)) seasoningFound = true;
+            }
+            if (!seasoningFound) return false;
+        }
 
-		return foundBases == this.base.size() && finder.findRecipe(this, null);
-	}
+        return foundBases == this.base.size() && finder.findRecipe(this, null);
+    }
 
-	@Override
-	public DefaultedList<Ingredient> getPreviewInputs() {
-		return base;
-	}
+    @Override
+    public ItemStack craft(CraftingInventory inv) {
+        CookingInventory cooking = null;
+        if (inv instanceof CookingInventory) cooking = (CookingInventory) inv;
+        ItemStack meal = this.output.copy();
+        if (!meal.hasTag()) meal.setTag(new CompoundTag());
+        int prominence = 0;
+        List<ItemStack> ingredients = new ArrayList<>();
+        for (int i = 0; i < CookingInventory.SECTION_SIZE; i++) {
+            if (!inv.getStack(i).isEmpty()) ingredients.add(inv.getStack(i));
+        }
+        List<ItemStack> seasonings = new ArrayList<>();
+        for (int i = CookingInventory.SECTION_SIZE; i < inv.size(); i++) {
+            if (!inv.getStack(i).isEmpty()) seasonings.add(inv.getStack(i));
+        }
+        List<StatusEffectInstance> effects = new ArrayList<>();
+        for (ItemStack ingredient : ingredients) {
+            Item item = ingredient.getItem();
+            if (IngredientProfiles.MEAL_INGREDIENTS.containsKey(item)) {
+                prominence = Math.max(prominence, IngredientProfiles.MEAL_INGREDIENTS.get(item).getImpact());
+            }
+        }
+        for (ItemStack seasoning : seasonings) {
+            Item item = seasoning.getItem();
+            if (item instanceof Seasoning) {
+                if (IngredientProfiles.MEAL_INGREDIENTS.containsKey(item))
+                    prominence = Math.max(prominence, IngredientProfiles.MEAL_INGREDIENTS.get(item).getImpact());
+                if (((Seasoning) item).getBonusEffect(seasoning) != null)
+                    effects = addEffect(effects, ((Seasoning) item).getBonusEffect(seasoning));
+            } else if (IngredientProfiles.MEAL_INGREDIENTS.containsKey(item)) {
+                prominence = Math.max(prominence, IngredientProfiles.MEAL_INGREDIENTS.get(item).getImpact());
+            } else if (IngredientProfiles.DRESSINGS.containsKey(item)) {
+                StatusEffect effectToAdd = IngredientProfiles.DRESSINGS.get(item).getEffect();
+                int timeToAdd = IngredientProfiles.EFFECT_TIMES.getOrDefault(effectToAdd, 1800);
+                effects = addEffect(effects, new StatusEffectInstance(effectToAdd, timeToAdd));
+            }
+        }
 
-	public DefaultedList<Ingredient> getSeasonings() {
-		return seasonings;
-	}
+        StatusEffect effectToAdd = FlavorGroup.forImpact(prominence).getEffect();
+        int timeToAdd = IngredientProfiles.EFFECT_TIMES.getOrDefault(effectToAdd, 1800);
+        effects = addEffect(effects, new StatusEffectInstance(effectToAdd, timeToAdd));
+        effects = addSalt(effects, countSalt(seasonings));
+        int boostedHunger = 0;
+        float boostedSaturation = 0;
+        if (cooking != null) {
+            for (MealBooster booster : MealBooster.BOOSTERS) {
+                effects = booster.addBoostEffects(effects, seasonings, cooking);
+                boostedHunger += booster.addBoostHunger(seasonings, cooking);
+                boostedSaturation += booster.addBoostSaturation(seasonings, cooking);
+            }
+        }
+        meal.getTag().put("FlavorProfile", makeFlavorProfile(FlavorGroup.forImpact(prominence), seasonings, boostedHunger, boostedSaturation));
+        PotionUtil.setCustomPotionEffects(meal, effects);
+        return meal;
+    }
 
-	@Override
-	public ItemStack craft(CraftingInventory inv) {
-		CookingInventory cooking = null;
-		if (inv instanceof CookingInventory) cooking = (CookingInventory)inv;
-		ItemStack meal = this.output.copy();
-		if (!meal.hasTag()) meal.setTag(new CompoundTag());
-		int prominence = 0;
-		List<ItemStack> ingredients = new ArrayList<>();
-		for (int i = 0; i < CookingInventory.SECTION_SIZE; i++) {
-			if (!inv.getStack(i).isEmpty()) ingredients.add(inv.getStack(i));
-		}
-		List<ItemStack> seasonings = new ArrayList<>();
-		for (int i = CookingInventory.SECTION_SIZE; i < inv.size(); i++) {
-			if (!inv.getStack(i).isEmpty()) seasonings.add(inv.getStack(i));
-		}
-		List<StatusEffectInstance> effects = new ArrayList<>();
-		for (ItemStack ingredient : ingredients) {
-			Item item = ingredient.getItem();
-			if (IngredientProfiles.MEAL_INGREDIENTS.containsKey(item)) {
-				prominence = Math.max(prominence, IngredientProfiles.MEAL_INGREDIENTS.get(item).getImpact());
-			}
-		}
-		for (ItemStack seasoning : seasonings) {
-			Item item = seasoning.getItem();
-			if (item instanceof Seasoning) {
-				if (IngredientProfiles.MEAL_INGREDIENTS.containsKey(item))
-					prominence = Math.max(prominence, IngredientProfiles.MEAL_INGREDIENTS.get(item).getImpact());
-				if (((Seasoning) item).getBonusEffect(seasoning) != null)
-					effects = addEffect(effects, ((Seasoning) item).getBonusEffect(seasoning));
-			} else if (IngredientProfiles.MEAL_INGREDIENTS.containsKey(item)) {
-				prominence = Math.max(prominence, IngredientProfiles.MEAL_INGREDIENTS.get(item).getImpact());
-			} else if (IngredientProfiles.DRESSINGS.containsKey(item)) {
-				StatusEffect effectToAdd = IngredientProfiles.DRESSINGS.get(item).getEffect();
-				int timeToAdd = IngredientProfiles.EFFECT_TIMES.getOrDefault(effectToAdd, 1800);
-				effects = addEffect(effects, new StatusEffectInstance(effectToAdd, timeToAdd));
-			}
-		}
+    @Override
+    public boolean fits(int x, int y) {
+        return x * y <= CookingInventory.SECTION_SIZE * 2;
+    }
 
-		StatusEffect effectToAdd = FlavorGroup.forImpact(prominence).getEffect();
-		int timeToAdd = IngredientProfiles.EFFECT_TIMES.getOrDefault(effectToAdd, 1800);
-		effects = addEffect(effects, new StatusEffectInstance(effectToAdd, timeToAdd));
-		effects = addSalt(effects, countSalt(seasonings));
-		int boostedHunger = 0;
-		float boostedSaturation = 0;
-		if (cooking != null) {
-			for (MealBooster booster : MealBooster.BOOSTERS) {
-				effects = booster.addBoostEffects(effects, seasonings, cooking);
-				boostedHunger += booster.addBoostHunger(seasonings, cooking);
-				boostedSaturation += booster.addBoostSaturation(seasonings, cooking);
-			}
-		}
-		meal.getTag().put("FlavorProfile", makeFlavorProfile(FlavorGroup.forImpact(prominence), seasonings, boostedHunger, boostedSaturation));
-		PotionUtil.setCustomPotionEffects(meal, effects);
-		return meal;
-	}
+    @Override
+    public ItemStack getOutput() {
+        return this.output;
+    }
 
-	@Override
-	public boolean fits(int x, int y) {
-		return x * y <= CookingInventory.SECTION_SIZE * 2;
-	}
+    @Override
+    public DefaultedList<Ingredient> getPreviewInputs() {
+        return base;
+    }
 
-	@Override
-	public ItemStack getOutput() {
-		return this.output;
-	}
+    public String getGroup() {
+        return this.group;
+    }
 
-	@Override
-	public Identifier getId() {
-		return this.id;
-	}
+    @Override
+    public Identifier getId() {
+        return this.id;
+    }
 
-	public String getGroup() {
-		return this.group;
-	}
+    @Override
+    public RecipeSerializer<?> getSerializer() {
+        return EpicureanRecipes.MEAL_SERIALIZER;
+    }
 
-	@Override
-	public RecipeSerializer<?> getSerializer() {
-		return EpicureanRecipes.MEAL_SERIALIZER;
-	}
+    public static List<StatusEffectInstance> addEffect(List<StatusEffectInstance> currentEffects, StatusEffectInstance effectToAdd) {
+        StatusEffect effect = effectToAdd.getEffectType();
+        boolean replaced = false;
+        List<StatusEffectInstance> effects = new ArrayList<>(currentEffects);
+        for (StatusEffectInstance inst : currentEffects) {
+            if (inst.getEffectType() == effect) {
+                int index = effects.indexOf(inst);
+                int newAmp = Math.max(inst.getAmplifier(), effectToAdd.getAmplifier());
+                int newDuration = inst.getDuration() + (effectToAdd.getDuration() / (newAmp + 1));
+                if (newDuration >= 2 * IngredientProfiles.EFFECT_TIMES.getOrDefault(inst.getEffectType(), 200)) {
+                    newAmp++;
+                    newDuration /= 3;
+                }
+                StatusEffectInstance newInst = new StatusEffectInstance(inst.getEffectType(), newDuration, newAmp);
+                effects.set(index, newInst);
+                replaced = true;
+            }
+        }
+        if (!replaced) effects.add(effectToAdd);
+        return effects;
+    }
 
-	public static CompoundTag makeFlavorProfile(FlavorGroup group, List<ItemStack> seasonings, int boostHunger, float boostSaturation) {
-		CompoundTag tag = new CompoundTag();
-		tag.putString("ProminentFlavor", group.toString());
-		if (!seasonings.isEmpty()) {
-			tag.put("Seasonings", makeIngredientList(seasonings));
-			tag.putInt("Hunger", getHungerAmount(seasonings) + boostHunger);
-			tag.putFloat("Saturation", getSaturationAmount(seasonings) + boostSaturation);
-			tag.putInt("Salt", countSalt(seasonings));
-		}
-		return tag;
-	}
+    public static List<StatusEffectInstance> addSalt(List<StatusEffectInstance> currentEffects, int saltCount) {
+        List<StatusEffectInstance> effects = new ArrayList<>(currentEffects);
+        int effectCount = effects.size();
+        if (saltCount == 0) return currentEffects;
+        else if (saltCount == effectCount + 1) {
+            for (StatusEffectInstance effect : currentEffects) {
+                effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 2, effect.getAmplifier() + 1));
+            }
+        } else if (saltCount == effectCount) {
+            for (StatusEffectInstance effect : currentEffects) {
+                effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 4));
+            }
+        } else if (saltCount < effectCount) {
+            for (StatusEffectInstance effect : currentEffects) {
+                effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 6));
+            }
+        } else {
+            effects.clear();
+            for (StatusEffectInstance effect : currentEffects) {
+                effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), (3 * effect.getDuration()) / 4));
+            }
+        }
+        return effects;
+    }
 
-	public static CompoundTag makeIngredientList(List<ItemStack> ingredients) {
-		CompoundTag tag = new CompoundTag();
-		for (ItemStack stack : ingredients) {
-			String name = Registry.ITEM.getId(stack.getItem()).toString();
-			if (!tag.contains(name)) {
-				tag.putInt(name, 1);
-			} else {
-				tag.putInt(name, tag.getInt(name) + 1);
-			}
-		}
-		return tag;
-	}
+    public static int countSalt(List<ItemStack> seasonings) {
+        int salt = 0;
+        for (ItemStack stack : seasonings) {
+            if (Epicurean.config.useSaltTag ?
+                    ItemTags.getTagGroup().get(new Identifier("c", "salt")).contains(stack.getItem()) : stack.getItem() == EpicureanItems.SALT)
+                salt++;
+        }
+        return salt;
+    }
 
-	public static int getHungerAmount(List<ItemStack> ingredients) {
-		int hunger = 0;
-		int seasoningBonus = 0;
-		for (ItemStack stack : ingredients) {
-			if (stack.getItem().isFood()) {
-				hunger += stack.getItem().getFoodComponent().getHunger();
-			} else if (stack.getItem() instanceof Seasoning) {
-				seasoningBonus += ((Seasoning) stack.getItem()).getHungerRestored(stack);
-			}
-		}
-		hunger = (int) Math.ceil((hunger * Epicurean.config.seasoningEfficiency) + seasoningBonus);
-		return hunger;
-	}
+    public static CompoundTag makeFlavorProfile(FlavorGroup group, List<ItemStack> seasonings, int boostHunger, float boostSaturation) {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("ProminentFlavor", group.toString());
+        if (!seasonings.isEmpty()) {
+            tag.put("Seasonings", makeIngredientList(seasonings));
+            tag.putInt("Hunger", getHungerAmount(seasonings) + boostHunger);
+            tag.putFloat("Saturation", getSaturationAmount(seasonings) + boostSaturation);
+            tag.putInt("Salt", countSalt(seasonings));
+        }
+        return tag;
+    }
 
-	public static float getSaturationAmount(List<ItemStack> ingredients) {
-		float saturation = 0;
-		float seasoningBonus = 0;
-		for (ItemStack stack : ingredients) {
-			if (stack.getItem().isFood()) {
-				saturation += stack.getItem().getFoodComponent().getSaturationModifier();
-			} else if (stack.getItem() instanceof Seasoning) {
-				seasoningBonus += ((Seasoning) stack.getItem()).getSaturationModifier(stack);
-			}
-		}
-		return (float) ((saturation * Epicurean.config.seasoningEfficiency) + seasoningBonus);
-	}
+    public static CompoundTag makeIngredientList(List<ItemStack> ingredients) {
+        CompoundTag tag = new CompoundTag();
+        for (ItemStack stack : ingredients) {
+            String name = Registry.ITEM.getId(stack.getItem()).toString();
+            if (!tag.contains(name)) {
+                tag.putInt(name, 1);
+            } else {
+                tag.putInt(name, tag.getInt(name) + 1);
+            }
+        }
+        return tag;
+    }
 
-	public static int countSalt(List<ItemStack> seasonings) {
-		int salt = 0;
-		for (ItemStack stack : seasonings) {
-			if (Epicurean.config.useSaltTag?
-					ItemTags.getTagGroup().get(new Identifier("c", "salt")).contains(stack.getItem()) : stack.getItem() == EpicureanItems.SALT)
-				salt++;
-		}
-		return salt;
-	}
+    public static int getHungerAmount(List<ItemStack> ingredients) {
+        int hunger = 0;
+        int seasoningBonus = 0;
+        for (ItemStack stack : ingredients) {
+            if (stack.getItem().isFood()) {
+                hunger += stack.getItem().getFoodComponent().getHunger();
+            } else if (stack.getItem() instanceof Seasoning) {
+                seasoningBonus += ((Seasoning) stack.getItem()).getHungerRestored(stack);
+            }
+        }
+        hunger = (int) Math.ceil((hunger * Epicurean.config.seasoningEfficiency) + seasoningBonus);
+        return hunger;
+    }
 
-	public static List<StatusEffectInstance> addEffect(List<StatusEffectInstance> currentEffects, StatusEffectInstance effectToAdd) {
-		StatusEffect effect = effectToAdd.getEffectType();
-		boolean replaced = false;
-		List<StatusEffectInstance> effects = new ArrayList<>(currentEffects);
-		for (StatusEffectInstance inst : currentEffects) {
-			if (inst.getEffectType() == effect) {
-				int index = effects.indexOf(inst);
-				int newAmp = Math.max(inst.getAmplifier(), effectToAdd.getAmplifier());
-				int newDuration = inst.getDuration() + (effectToAdd.getDuration() / (newAmp + 1));
-				if (newDuration >= 2 * IngredientProfiles.EFFECT_TIMES.getOrDefault(inst.getEffectType(), 200)) {
-					newAmp++;
-					newDuration /= 3;
-				}
-				StatusEffectInstance newInst = new StatusEffectInstance(inst.getEffectType(), newDuration, newAmp);
-				effects.set(index, newInst);
-				replaced = true;
-			}
-		}
-		if (!replaced) effects.add(effectToAdd);
-		return effects;
-	}
+    public static float getSaturationAmount(List<ItemStack> ingredients) {
+        float saturation = 0;
+        float seasoningBonus = 0;
+        for (ItemStack stack : ingredients) {
+            if (stack.getItem().isFood()) {
+                saturation += stack.getItem().getFoodComponent().getSaturationModifier();
+            } else if (stack.getItem() instanceof Seasoning) {
+                seasoningBonus += ((Seasoning) stack.getItem()).getSaturationModifier(stack);
+            }
+        }
+        return (float) ((saturation * Epicurean.config.seasoningEfficiency) + seasoningBonus);
+    }
 
-	public static List<StatusEffectInstance> addSalt(List<StatusEffectInstance> currentEffects, int saltCount) {
-		List<StatusEffectInstance> effects = new ArrayList<>(currentEffects);
-		int effectCount = effects.size();
-		if (saltCount == 0) return currentEffects;
-		else if (saltCount == effectCount + 1) {
-			for (StatusEffectInstance effect : currentEffects) {
-				effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 2, effect.getAmplifier() + 1));
-			}
-		} else if (saltCount == effectCount) {
-			for (StatusEffectInstance effect : currentEffects) {
-				effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 4));
-			}
-		} else if (saltCount < effectCount) {
-			for (StatusEffectInstance effect : currentEffects) {
-				effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 6));
-			}
-		} else {
-			effects.clear();
-			for (StatusEffectInstance effect : currentEffects) {
-				effects = addEffect(effects, new StatusEffectInstance(effect.getEffectType(), (3*effect.getDuration()) / 4));
-			}
-		}
-		return effects;
-	}
+    public DefaultedList<Ingredient> getSeasonings() {
+        return seasonings;
+    }
 }

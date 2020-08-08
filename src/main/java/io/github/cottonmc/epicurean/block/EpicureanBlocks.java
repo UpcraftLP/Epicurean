@@ -12,18 +12,18 @@ import net.minecraft.util.registry.Registry;
 
 public class EpicureanBlocks {
 
-	public static final Block COOKING_TABLE = register("cooking_table", new CookingTableBlock());
+    public static final Block COOKING_TABLE = register("cooking_table", new CookingTableBlock());
 
-	public static final Identifier COOKING_CONTAINER = new Identifier(Epicurean.MOD_ID, "cooking");
+    public static final Identifier COOKING_CONTAINER = new Identifier(Epicurean.MOD_ID, "cooking");
 
-	private static Block register(String name, Block block) {
-		Registry.register(Registry.BLOCK, new Identifier(Epicurean.MOD_ID, name), block);
-		BlockItem item = new BlockItem(block, EpicureanItems.defaultSettings());
-		EpicureanItems.register(name, item);
-		return block;
-	}
+    private static Block register(String name, Block block) {
+        Registry.register(Registry.BLOCK, new Identifier(Epicurean.MOD_ID, name), block);
+        BlockItem item = new BlockItem(block, EpicureanItems.defaultSettings());
+        EpicureanItems.register(name, item);
+        return block;
+    }
 
-	public static void init() {
-		ContainerProviderRegistry.INSTANCE.registerFactory(COOKING_CONTAINER, (syncId, id, player, buf) -> new CookingTableContainer(syncId, player.inventory, ScreenHandlerContext.create(player.world, buf.readBlockPos())));
-	}
+    public static void init() {
+        ContainerProviderRegistry.INSTANCE.registerFactory(COOKING_CONTAINER, (syncId, id, player, buf) -> new CookingTableContainer(syncId, player.inventory, ScreenHandlerContext.create(player.world, buf.readBlockPos())));
+    }
 }

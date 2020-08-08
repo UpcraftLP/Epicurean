@@ -12,12 +12,14 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(InGameHud.class)
 public abstract class MixinHungerHud {
 
-	@Shadow protected abstract PlayerEntity getCameraPlayer();
+    @ModifyVariable(method = "renderStatusBars", at = @At(value = "STORE"), ordinal = 2)
+    public int getSaturationIntLevel(int orig) {
+        if (Epicurean.config.useSaturationOnly && !FabricLoader.getInstance().isModLoaded("appleskin"))
+            return (int) Math.floor(this.getCameraPlayer().getHungerManager().getSaturationLevel());
+        else return orig;
+    }
 
-	@ModifyVariable(method = "renderStatusBars", at = @At(value = "STORE"), ordinal = 2)
-	public int getSaturationIntLevel(int orig) {
-		if (Epicurean.config.useSaturationOnly && !FabricLoader.getInstance().isModLoaded("appleskin")) return (int)Math.floor(this.getCameraPlayer().getHungerManager().getSaturationLevel());
-		else return orig;
-	}
+    @Shadow
+    protected abstract PlayerEntity getCameraPlayer();
 
 }

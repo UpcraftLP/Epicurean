@@ -19,37 +19,37 @@ import net.minecraft.world.World;
 
 public class SpecialFoodItem extends Item {
 
-	public SpecialFoodItem(int hunger, float saturation, Item.Settings settings) {
-		super(settings.food(new FoodComponent.Builder().hunger(hunger).saturationModifier(saturation).build()));
-	}
+    public SpecialFoodItem(int hunger, float saturation, Item.Settings settings) {
+        super(settings.food(new FoodComponent.Builder().hunger(hunger).saturationModifier(saturation).build()));
+    }
 
-	@Override
-	public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-		ItemStack stack = player.getStackInHand(hand);
-		if (Epicurean.config.edibleNuggets || Epicurean.config.omnivoreEnabled) return super.use(world, player, hand);
-		else return new TypedActionResult<>(ActionResult.PASS, stack);
-	}
+    @Override
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getStackInHand(hand);
+        if (Epicurean.config.edibleNuggets || Epicurean.config.omnivoreEnabled) return super.use(world, player, hand);
+        else return new TypedActionResult<>(ActionResult.PASS, stack);
+    }
 
-	@Override
-	public UseAction getUseAction(ItemStack stack) {
-		return (Epicurean.config.edibleNuggets || Epicurean.config.omnivoreEnabled)? UseAction.EAT : UseAction.NONE;
-	}
+    @Override
+    public ItemStack finishUsing(ItemStack stack, World world, LivingEntity entity) {
+        if (Epicurean.config.edibleNuggets) return super.finishUsing(stack, world, entity);
+        else if (Epicurean.config.omnivoreEnabled) {
+            if (entity instanceof PlayerEntity) {
+                PlayerEntity player = (PlayerEntity) entity;
+                player.getHungerManager().add(Epicurean.config.omnivoreFoodRestore, Epicurean.config.omnivoreSaturationRestore);
+                world.playSound(null, player.getBlockPos().getX(), player.getBlockPos().getY(), player.getBlockPos().getZ(), SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
+                player.incrementStat(Stats.USED.getOrCreateStat(this));
+                if (player instanceof ServerPlayerEntity) {
+                    Criteria.CONSUME_ITEM.trigger((ServerPlayerEntity) player, stack);
+                }
+            }
+            stack.decrement(1);
+        }
+        return stack;
+    }
 
-	@Override
-	public ItemStack finishUsing(ItemStack stack, World world, LivingEntity entity) {
-		if (Epicurean.config.edibleNuggets) return super.finishUsing(stack, world, entity);
-		else if (Epicurean.config.omnivoreEnabled) {
-			if (entity instanceof PlayerEntity) {
-				PlayerEntity player = (PlayerEntity) entity;
-				player.getHungerManager().add(Epicurean.config.omnivoreFoodRestore, Epicurean.config.omnivoreSaturationRestore);
-				world.playSound(null, player.getBlockPos().getX(), player.getBlockPos().getY(), player.getBlockPos().getZ(), SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
-				player.incrementStat(Stats.USED.getOrCreateStat(this));
-				if (player instanceof ServerPlayerEntity) {
-					Criteria.CONSUME_ITEM.trigger((ServerPlayerEntity) player, stack);
-				}
-			}
-			stack.decrement(1);
-		}
-		return stack;
-	}
+    @Override
+    public UseAction getUseAction(ItemStack stack) {
+        return (Epicurean.config.edibleNuggets || Epicurean.config.omnivoreEnabled) ? UseAction.EAT : UseAction.NONE;
+    }
 }

@@ -15,56 +15,56 @@ import net.minecraft.world.gen.placer.SimpleBlockPlacer;
 import net.minecraft.world.gen.stateprovider.SimpleBlockStateProvider;
 
 public class CropGeneration {
-	public static void registerCrops() {
-		for (Biome biome : Registry.BIOME) {
-			if (biome.getTemperatureGroup() == Biome.TemperatureGroup.WARM) {
-				biome.addFeature(GenerationStep.Feature.VEGETAL_DECORATION,
-						Feature.RANDOM_PATCH.configure(
-								createPlantFeature(
-										EpicureanCrops.PEPPER_PLANT.getDefaultState().with(PickableCropBlock.AGE, 3),
-										Blocks.GRASS_BLOCK, Blocks.SAND))
-								.decorate(
-										Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
-												new ChanceDecoratorConfig(1)
-										)
-								)
-				);
-			}
-			if (biome.getPrecipitation() == Biome.Precipitation.RAIN && biome.getTemperatureGroup() == Biome.TemperatureGroup.MEDIUM) {
-				biome.addFeature(GenerationStep.Feature.VEGETAL_DECORATION,
-						Feature.RANDOM_PATCH.configure(
-								createPlantFeature(
-										EpicureanCrops.ONION_PLANT.getDefaultState().with(HarvestableCropBlock.AGE, 7),
-										Blocks.GRASS_BLOCK))
-								.decorate(
-										Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
-												new ChanceDecoratorConfig(1)
-										)
-								)
-				);
-				biome.addFeature(GenerationStep.Feature.VEGETAL_DECORATION,
-						Feature.RANDOM_PATCH.configure(
-								createPlantFeature(
-										EpicureanCrops.TOMATO_PLANT.getDefaultState().with(HarvestableCropBlock.AGE, 7),
-										Blocks.GRASS_BLOCK))
-								.decorate(
-										Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
-												new ChanceDecoratorConfig(1)
-										)
-								)
-				);
-			}
-		}
-	}
+    public static void registerCrops() {
+        for (Biome biome : Registry.BIOME) {
+            if (biome.getTemperatureGroup() == Biome.TemperatureGroup.WARM) {
+                biome.addFeature(GenerationStep.Feature.VEGETAL_DECORATION,
+                        Feature.RANDOM_PATCH.configure(
+                                createPlantFeature(
+                                        EpicureanCrops.PEPPER_PLANT.getDefaultState().with(PickableCropBlock.AGE, 3),
+                                        Blocks.GRASS_BLOCK, Blocks.SAND))
+                                .decorate(
+                                        Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
+                                                new ChanceDecoratorConfig(1)
+                                        )
+                                )
+                );
+            }
+            if (biome.getPrecipitation() == Biome.Precipitation.RAIN && biome.getTemperatureGroup() == Biome.TemperatureGroup.MEDIUM) {
+                biome.addFeature(GenerationStep.Feature.VEGETAL_DECORATION,
+                        Feature.RANDOM_PATCH.configure(
+                                createPlantFeature(
+                                        EpicureanCrops.ONION_PLANT.getDefaultState().with(HarvestableCropBlock.AGE, 7),
+                                        Blocks.GRASS_BLOCK))
+                                .decorate(
+                                        Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
+                                                new ChanceDecoratorConfig(1)
+                                        )
+                                )
+                );
+                biome.addFeature(GenerationStep.Feature.VEGETAL_DECORATION,
+                        Feature.RANDOM_PATCH.configure(
+                                createPlantFeature(
+                                        EpicureanCrops.TOMATO_PLANT.getDefaultState().with(HarvestableCropBlock.AGE, 7),
+                                        Blocks.GRASS_BLOCK))
+                                .decorate(
+                                        Decorator.CHANCE_HEIGHTMAP_DOUBLE.configure(
+                                                new ChanceDecoratorConfig(1)
+                                        )
+                                )
+                );
+            }
+        }
+    }
 
-	private static RandomPatchFeatureConfig createPlantFeature(BlockState state, Block...plantOn) {
-		return new RandomPatchFeatureConfig.Builder(
-				new SimpleBlockStateProvider(state),
-				new SimpleBlockPlacer()
-		)
-				.tries(64)
-				.whitelist(ImmutableSet.copyOf(plantOn))
-				.cannotProject()
-				.build();
-	}
+    private static RandomPatchFeatureConfig createPlantFeature(BlockState state, Block... plantOn) {
+        return new RandomPatchFeatureConfig.Builder(
+                new SimpleBlockStateProvider(state),
+                new SimpleBlockPlacer()
+        )
+                .tries(64)
+                .whitelist(ImmutableSet.copyOf(plantOn))
+                .cannotProject()
+                .build();
+    }
 }

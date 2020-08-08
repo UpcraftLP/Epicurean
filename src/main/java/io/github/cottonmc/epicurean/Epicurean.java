@@ -1,9 +1,7 @@
 package io.github.cottonmc.epicurean;
 
-import io.github.cottonmc.cotton.config.ConfigManager;
-import io.github.cottonmc.cotton.logging.ModLogger;
-import io.github.cottonmc.epicurean.block.crop.CropGeneration;
 import io.github.cottonmc.epicurean.block.EpicureanBlocks;
+import io.github.cottonmc.epicurean.block.crop.CropGeneration;
 import io.github.cottonmc.epicurean.block.crop.EpicureanCrops;
 import io.github.cottonmc.epicurean.item.EpicureanItems;
 import io.github.cottonmc.epicurean.meal.IngredientProfiles;
@@ -16,13 +14,14 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Epicurean implements ModInitializer {
-    public static EpicureanConfig config;
-    public static String MOD_ID = "epicurean";
+    public static final String MOD_ID = "epicurean";
     public static final ItemGroup EPICUREAN_GROUP = FabricItemGroupBuilder.build(new Identifier(MOD_ID, "epicurean_group"), () -> new ItemStack(EpicureanItems.JELLY));
-
-    public static final ModLogger LOGGER = new ModLogger(MOD_ID, "Epicurean");
+    public static final Logger LOGGER = LogManager.getLogger("Epicurean");
+    public static EpicureanConfig config;
 
     @Override
     public void onInitialize() {

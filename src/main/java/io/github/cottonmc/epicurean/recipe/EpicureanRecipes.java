@@ -22,51 +22,51 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 public class EpicureanRecipes {
-	public static RecipeSerializer<AddJellyRecipe> ADD_JELLY_SERIALIZER = register("add_jelly", new SpecialRecipeSerializer<>(AddJellyRecipe::new));
+    public static RecipeSerializer<AddJellyRecipe> ADD_JELLY_SERIALIZER = register("add_jelly", new SpecialRecipeSerializer<>(AddJellyRecipe::new));
 
-	public static RecipeType<MealRecipe> MEAL = register("meal");
-	public static RecipeSerializer<MealRecipe> MEAL_SERIALIZER = register("meal", new MealRecipeSerializer());
+    public static RecipeType<MealRecipe> MEAL = register("meal");
+    public static RecipeSerializer<MealRecipe> MEAL_SERIALIZER = register("meal", new MealRecipeSerializer());
 
-	public static RecipeSerializer<DressingMealRecipe> DRESSING_MEAL_SERIALIZER = register("add_dressing", new DressingMealSerializer<>(DressingMealRecipe::new));
+    public static RecipeSerializer<DressingMealRecipe> DRESSING_MEAL_SERIALIZER = register("add_dressing", new DressingMealSerializer<>(DressingMealRecipe::new));
 
-	public static <T extends Recipe<?>> RecipeType<T> register(String id) {
-		return Registry.register(Registry.RECIPE_TYPE, new Identifier(id), new RecipeType<T>() {
-			public String toString() {
-				return id;
-			}
-		});
-	}
+    public static <T extends Recipe<?>> RecipeType<T> register(String id) {
+        return Registry.register(Registry.RECIPE_TYPE, new Identifier(id), new RecipeType<T>() {
+            public String toString() {
+                return id;
+            }
+        });
+    }
 
-	public static <S extends RecipeSerializer<T>, T extends Recipe<?>> S register(String name, S serializer) {
-		return Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(Epicurean.MOD_ID, name), serializer);
-	}
+    public static <S extends RecipeSerializer<T>, T extends Recipe<?>> S register(String name, S serializer) {
+        return Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(Epicurean.MOD_ID, name), serializer);
+    }
 
-	public static void init() {
-		CauldronBehavior.registerBehavior(
-				(ctx) -> FluidTags.WATER.contains(ctx.getFluid())
-						&& ctx.getStack().getItem() == Items.NETHER_WART
-						&& ctx.getWorld().getBlockState(ctx.getPos().down()).getBlock() == Blocks.FIRE
-						&& !ctx.getWorld().isClient,
-				(ctx) -> {
-					PlayerEntity player = ctx.getPlayer();
-					ItemStack stack = ctx.getStack();
-					if (player == null || !player.abilities.creativeMode) {
-						ItemStack salt = new ItemStack(EpicureanItems.SALT, 1);
-						if (player != null) player.increaseStat(Stats.USE_CAULDRON, 1);
-						stack.decrement(1);
-						if (player != null) {
-							if (stack.isEmpty()) {
-								player.setStackInHand(ctx.getHand(), salt);
-							} else if (!player.inventory.insertStack(salt)) {
-								player.dropItem(salt, false);
-							}
-						} else {
-							ItemEntity entity = new ItemEntity(ctx.getWorld(), ctx.getPos().getX(), ctx.getPos().getY()+1, ctx.getPos().getZ(), salt);
-							ctx.getWorld().spawnEntity(entity);
-						}
-					}
-					((Cauldron)ctx.getState().getBlock()).drain(ctx.getWorld(), ctx.getPos(), ctx.getState(), Fluids.WATER, 1);
-					ctx.getWorld().playSound(null, ctx.getPos(), SoundEvents.BLOCK_NETHER_WART_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
-				});
-	}
+    public static void init() {
+        CauldronBehavior.registerBehavior(
+                (ctx) -> FluidTags.WATER.contains(ctx.getFluid())
+                        && ctx.getStack().getItem() == Items.NETHER_WART
+                        && ctx.getWorld().getBlockState(ctx.getPos().down()).getBlock() == Blocks.FIRE
+                        && !ctx.getWorld().isClient,
+                (ctx) -> {
+                    PlayerEntity player = ctx.getPlayer();
+                    ItemStack stack = ctx.getStack();
+                    if (player == null || !player.abilities.creativeMode) {
+                        ItemStack salt = new ItemStack(EpicureanItems.SALT, 1);
+                        if (player != null) player.increaseStat(Stats.USE_CAULDRON, 1);
+                        stack.decrement(1);
+                        if (player != null) {
+                            if (stack.isEmpty()) {
+                                player.setStackInHand(ctx.getHand(), salt);
+                            } else if (!player.inventory.insertStack(salt)) {
+                                player.dropItem(salt, false);
+                            }
+                        } else {
+                            ItemEntity entity = new ItemEntity(ctx.getWorld(), ctx.getPos().getX(), ctx.getPos().getY() + 1, ctx.getPos().getZ(), salt);
+                            ctx.getWorld().spawnEntity(entity);
+                        }
+                    }
+                    ((Cauldron) ctx.getState().getBlock()).drain(ctx.getWorld(), ctx.getPos(), ctx.getState(), Fluids.WATER, 1);
+                    ctx.getWorld().playSound(null, ctx.getPos(), SoundEvents.BLOCK_NETHER_WART_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
+                });
+    }
 }
