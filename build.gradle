@@ -1,5 +1,5 @@
 plugins {
-	id "fabric-loom" version "0.4-SNAPSHOT"
+	id "fabric-loom" version "0.5-SNAPSHOT"
 	id "maven-publish"
 	id "com.jfrog.artifactory" version "4.9.0"
 }
@@ -15,17 +15,27 @@ minecraft {
 }
 
 repositories {
-	maven { url "https://maven.onyxstudios.dev" } // Onyx Studios maven - home of Cardinal Components
+	maven {
+		name = "JitPack"
+		url = "https://jitpack.io"
+	}
 }
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_build}:v2"
+	compileOnly "com.google.code.findbugs:jsr305:3.0.2" // needed for nullability annotations in MC source
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
-	modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
+	compileOnly "org.jetbrains:annotations:19.0.0"
+
+	modImplementation include("io.github.GlassPane:Mesh:${project.mesh_version}")
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "me.shedaniel:RoughlyEnoughItems:${project.rei_version}"
+
+	modRuntime "io.github.prospector:modmenu:${project.modmenu_version}"
+
+	annotationProcessor "io.github.GlassPane:Mesh:${project.mesh_version}:annotations"
 }
 
 processResources {
@@ -50,8 +60,8 @@ tasks.withType(JavaCompile) {
 // if it is present.
 // If you remove this task, sources will not be generated.
 task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = "sources"
 	from sourceSets.main.allSource
+	archiveClassifier.set("sources")
 }
 
 jar {
